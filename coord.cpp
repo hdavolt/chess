@@ -3,24 +3,22 @@
 #include <cmath>
 #include <algorithm>
 
-Coord::Coord(int x, int y, bool in) 
+Coord::Coord(int x, int y, bool bd) 
 {
-    switch(in)
-    {
-        case true:
-            if (in_bounds(x, y)) {
-                x_val = x;
-                y_val = y;
-                bounds = true;
-            }
-            else {
-                throw Out_of_bounds();
-            }
-        default:
+    if (bd) {
+        if (in_bounds(x, y)) {
             x_val = x;
             y_val = y;
-            bounds = false;
+        }
+        else {
+            throw Out_of_bounds();
+        }
     }
+    else {
+        x_val = x;
+        y_val = y;
+    }
+    bounded = bd;
 }
 
 Coord Coord::operator+(const Coord &c)

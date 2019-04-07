@@ -7,15 +7,15 @@
 class Coord 
 {
     public:
-        // Default bounds (absolute value)
+        // Default bounds
         static int x_min;
         static int x_max;
         static int y_min;
         static int y_max;
         
-        Coord() { x_val = x_min, y_val = y_min; };
+        Coord() { x_val = x_min, y_val = y_min; bounded = true; };
         // Regular constructor, passing false for third value will ignore bounds
-        Coord(int x, int y, bool in = true);
+        Coord(int x, int y, bool bd = true);
         int get_x_val() { return x_val; };
         int get_y_val() { return y_val; };
         Coord operator+(const Coord &c);
@@ -47,7 +47,7 @@ class Coord
     private:
         int x_val;
         int y_val;
-        bool bounds;
+        bool bounded;
 };
 
 #endif
