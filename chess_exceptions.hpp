@@ -6,4 +6,9 @@ class Out_of_bounds
     
 };
 
+class Invalid_move
+{
+
+};
+
 #endif

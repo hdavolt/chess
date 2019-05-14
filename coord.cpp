@@ -1,7 +1,6 @@
 #include "coord.hpp"
 #include "chess_exceptions.hpp"
-#include <cmath>
-#include <algorithm>
+#include <algorithm> // For std::max
 
 Coord::Coord(int x, int y, bool bd) 
 {
@@ -21,116 +20,63 @@ Coord::Coord(int x, int y, bool bd)
     bounded = bd;
 }
 
-Coord Coord::operator+(const Coord &c)
+void Coord::operator=(const Coord &c)
 {
-    Coord temp(x_val + c.x_val, y_val + c.y_val, c.bounds);
-    
-    return temp;
-}
-
-Coord Coord::operator-(const Coord &c)
-{
-    Coord temp(x_val - c.x_val, y_val - c.y_val, c.bounds);
-    return temp;
-}
-
-void Coord::set_coord(int x, int y)
-{
-    if (in_bounds(x, y)) {
-        x_val = x;
-        y_val = y;
+    if (bounded) {
+        if (in_bounds(c.get_x(), c.get_y())) {
+            x_val = c.get_x();
+            y_val = c.get_y();
+        }
     }
     else {
-        throw Out_of_bounds();
+        x_val = c.x_val;
+        y_val = c.y_val;
     }
 }
 
-Coord Coord::operator+(int a)
+bool Coord::set(int x, int y)
 {
-    Coord temp(x_val + a, y_val + a);
-    return temp;
+    bool res = false;
+    if (bounded) {
+        if (in_bounds(x, y)) {
+            x_val = x;
+            y_val = y;
+            res = true;
+        }
+    }
+    else {
+        x_val = x;
+        y_val = y;
+        res = true;
+    }
+    return res;
 }
 
-Coord Coord::operator-(int a)
+bool Coord::move(int x, int y)
 {
-    Coord temp(x_val - a, y_val - a);
-    return temp;
+    bool res = false;
+    if (bounded) {
+        if (in_bounds(x_val + x, y_val + y)) {
+            x_val += x;
+            y_val += y;
+            res = true;
+        }
+    }
+    else {
+        x_val += x;
+        y_val += y;
+        res = true;
+    }
+    return res;
 }
 
-Coord Coord::add_x(int a)
+Coord Coord::comp(const Coord &c) const
 {
-    Coord temp(x_val + a, y_val);
-    return temp;
+    Coord res(comp_x(c), comp_y(c), false);
+    return res;
 }
 
-Coord Coord::add_y(int a)
-{
-    Coord temp(x_val, y_val + a);
-    return temp;
-}
-
-Coord Coord::inverse_slope(int a)
-{
-    Coord temp(x_val + a, y_val - a);
-    return temp;
-}
-
-bool Coord::operator<(const Coord &c)
-{
-    if (c.x_val < x_val || c.y_val < y_val)
-        return true;
-    else
-        return false;
-}
-bool Coord::operator>(const Coord &c)
-{
-    if (c.x_val > x_val || c.y_val > y_val)
-        return true;
-    else
-        return false;
-}
-
-bool Coord::in_bounds(int x, int y)
-{
-    if (x >= std::abs(x_min) && x <= std::abs(x_max) &&
-        y >= std::abs(y_min) && y <= std::abs(y_max))
-        return true;
-    else
-        return false;
-}
-
-bool Coord::in_x(const Coord &c)
-{
-    if (c.x_val == x_val)
-        return true;
-    else
-        return false;
-}
-
-bool Coord::in_y(const Coord &c)
-{
-    if (c.y_val == y_val)
-        return true;
-    else
-        return false;
-}
-
-bool Coord::in_neg_slope_high(const Coord &c)
-{
-    if (c.x_val < x_val && c.y_val > y_val)
-        return true;
-    else
-        return false;
-}
-bool Coord::in_neg_slope_low(const Coord &c)
-{
-    if (c.x_val > x_val && c.y_val < y_val)
-        return true;
-    else
-        return false;
-}
-
-int Coord::distance_from(const Coord &c)
+int Coord::distance(const Coord &c)
 {
     return std::max(std::abs(c.x_val - x_val), std::abs(c.y_val - y_val));
 }
@@ -147,4 +93,13 @@ std::ostream& operator<<(std::ostream& out, const Coord &c)
 {
     out << c.x_val << " " << c.y_val;
     return out;
+}
+
+bool Coord::in_bounds(int x, int y)
+{
+    if (x >= std::abs(x_min) && x <= std::abs(x_max) &&
+        y >= std::abs(y_min) && y <= std::abs(y_max))
+        return true;
+    else
+        return false;
 }
