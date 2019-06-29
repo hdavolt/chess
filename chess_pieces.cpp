@@ -249,7 +249,7 @@ Queen::Queen(int pl, Coord l) : Piece(pl, l)
     }
 }
 
-void Bishop::remove_blocked(const std::list<std::pair<Coord, int>> &blocks)
+void Queen::remove_blocked(const std::list<std::pair<Coord, int>> &blocks)
 {
     Coord pos_max = loc;
     Coord pos_min = loc;
