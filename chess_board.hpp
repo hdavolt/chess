@@ -17,6 +17,7 @@ public:
     void move_piece(const Coord &c1, const Coord &c2);
 private:
     std::map<Coord, std::unique_ptr<Piece>> board_map;
+    std::list<std::unique_ptr<Piece>> captured_list;
 };
 
 

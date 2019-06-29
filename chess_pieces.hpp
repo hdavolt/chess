@@ -13,6 +13,7 @@ public:
     const int & get_val() const { return value; };
     const int & get_player() const { return player; };
     const Coord & get_loc() const { return loc; };
+    void set_loc(const Coord &l) { loc = l; };
     const std::list<Coord> & get_moves() const { return moves; };
     void calc_moves(const Coord &c);
     virtual void add_move() { move_count++; };
