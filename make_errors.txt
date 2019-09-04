@@ -1,0 +1,18 @@
+g++ -Wall -g -o chess chess_main.cpp chess_pieces.cpp chess_objects.cpp
+/tmp/ccmDJBkN.o:(.bss+0x0): multiple definition of `Chess::p_arr_board'
+/tmp/ccMXe6TA.o:(.bss+0x0): first defined here
+/tmp/ccGw8rL2.o:(.bss+0x0): multiple definition of `Chess::p_arr_board'
+/tmp/ccMXe6TA.o:(.bss+0x0): first defined here
+/tmp/ccMXe6TA.o: In function `Chess::Piece::~Piece()':
+/mnt/c/Users/hdavo/Documents/GitHub/chess/chess_pieces.hpp:11: undefined reference to `vtable for Chess::Piece'
+/tmp/ccmDJBkN.o: In function `Chess::Piece::Piece(int, int)':
+chess_pieces.cpp:(.text._ZN5Chess5PieceC2Eii[_ZN5Chess5PieceC5Eii]+0x15): undefined reference to `vtable for Chess::Piece'
+/tmp/ccmDJBkN.o:(.data.rel.ro._ZTIN5Chess4KingE[_ZTIN5Chess4KingE]+0x10): undefined reference to `typeinfo for Chess::Piece'
+/tmp/ccmDJBkN.o:(.data.rel.ro._ZTIN5Chess5QueenE[_ZTIN5Chess5QueenE]+0x10): undefined reference to `typeinfo for Chess::Piece'
+/tmp/ccmDJBkN.o:(.data.rel.ro._ZTIN5Chess6BishopE[_ZTIN5Chess6BishopE]+0x10): undefined reference to `typeinfo for Chess::Piece'
+/tmp/ccmDJBkN.o:(.data.rel.ro._ZTIN5Chess6KnightE[_ZTIN5Chess6KnightE]+0x10): undefined reference to `typeinfo for Chess::Piece'
+/tmp/ccmDJBkN.o:(.data.rel.ro._ZTIN5Chess4RookE[_ZTIN5Chess4RookE]+0x10): undefined reference to `typeinfo for Chess::Piece'
+/tmp/ccmDJBkN.o:(.data.rel.ro._ZTIN5Chess4PawnE[_ZTIN5Chess4PawnE]+0x10): more undefined references to `typeinfo for Chess::Piece' follow
+collect2: error: ld returned 1 exit status
+makefile:5: recipe for target 'chess' failed
+make: *** [chess] Error 1

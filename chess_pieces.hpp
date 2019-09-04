@@ -1,99 +1,197 @@
 #ifndef __CHESS_PIECES_HPP__
 #define __CHESS_PIECES_HPP__
-#define CONSOLE
 
 #include <list>
-#include "coord.hpp"
+#include <algorithm>
+#include <array>
+#include <memory>
 
-class Piece
+namespace Chess
 {
-public:
-    Piece();
-    Piece(int pl, Coord l) : player(pl), loc(l) {};
-    const int & get_val() const { return value; };
-    const int & get_player() const { return player; };
-    const Coord & get_loc() const { return loc; };
-    void set_loc(const Coord &l) { loc = l; };
-    const std::list<Coord> & get_moves() const { return moves; };
-    void calc_moves(const Coord &c);
-    virtual void add_move() { move_count++; };
-    virtual void remove_blocked(const std::list<std::pair<Coord, int>> &blocks) = 0;
+    class Piece
+    {
+    public:
+        Piece();
+        Piece(const int in_player, const int in_location) : 
+            n_player(in_player), n_location(in_location) {};
 
-protected:
-    const int value = 0;
-    int player;
-    int move_count = 0;
-    Coord loc;
-    std::list<Coord> rules;
-    std::list<Coord> moves;
-};
+        const int get_player() const   { return n_player; };
+        const int get_location() const { return n_location; };
 
-class Pawn : public Piece
-{
-public:
-    Pawn() : Piece() {};
-    Pawn(int pl, Coord l);
-    void add_move();
-    void remove_blocked(const std::list<std::pair<Coord, int>> &blocks);
+        const int get_value() { return n_value; };
+        const char get_type() { return c_type; };
 
-private:
-    const int value = 1;
-    void pawn_update_rules();
-};
+        bool add_move(const int in_location);
+        const std::list<int> & calc_avail_moves();
 
-class Rook : public Piece
-{
-public:
-    Rook() : Piece() {};
-    Rook(int pl, Coord l);
-    void remove_blocked(const std::list<std::pair<Coord, int>> &blocks);
+    protected:
+        int n_player;
+        int n_location;
+        int n_move_count = 0;
 
-private:
-    const int value = 5;
-};
+        int  n_value = 0;
+        char c_type = '$';
 
-class Knight : public Piece
-{
-public:
-    Knight() : Piece() {};
-    Knight(int pl, Coord l);
-    void remove_blocked(const std::list<std::pair<Coord, int>> &blocks);
+        std::list<int>  nl_rel_moves;
+        std::list<int>  nl_act_moves;
+        std::list<int>  nl_move_history;
+        virtual void delete_blocked_moves() = 0;
 
-private:
-    const int value = 3;
-};
+        /*
+        void DeleteColHigh       (const int inValue);
+        void DeleteColLow        (const int inValue);
+        void DeleteRowHigh       (const int inValue);
+        void DeleteRowLow        (const int inValue);
+        void DeleteDiagHighHigh  (const int inValue);
+        void DeleteDiagHighLow   (const int inValue);
+        void DeleteDiagLowLow    (const int inValue);
+        void DeleteDiagLowHigh   (const int inValue);
+        */
+    };
 
-class Bishop : public Piece
-{
-public:
-    Bishop() : Piece() {};
-    Bishop(int pl, Coord l);
-    void remove_blocked(const std::list<std::pair<Coord, int>> &blocks);
+    class Pawn : public Piece
+    {
+    public:
+        Pawn() : Piece() {};
+        Pawn(const int in_player, const int in_location);
+        bool add_move(const int in_location);
+        void delete_blocked_moves();
+    };
 
-private:
-    const int value = 3;
-};
+    class Rook : public Piece
+    {
+    public:
+        Rook() : Piece() {};
+        Rook(const int in_player, const int in_location);
+        void delete_blocked_moves();
+    };
 
-class Queen : public Piece
-{
-public:
-    Queen() : Piece() {};
-    Queen(int pl, Coord l);
-    void remove_blocked(const std::list<std::pair<Coord, int>> &blocks);
+    class Knight : public Piece
+    {
+    public:
+        Knight() : Piece() {};
+        Knight(const int in_player, const int in_location);
+        void delete_blocked_moves();
+    };
 
-private:
-    const int value = 9;
-};
+    class Bishop : public Piece
+    {
+    public:
+        Bishop() : Piece() {};
+        Bishop(const int in_player, const int in_location);
+        void delete_blocked_moves();
+    };
 
-class King : public Piece
-{
-public:
-    King() : Piece() {};
-    King(int pl, Coord l);
-    void remove_blocked(const std::list<std::pair<Coord, int>> &blocks);
+    class Queen : public Piece
+    {
+    public:
+        Queen() : Piece() {};
+        Queen(const int in_player, const int in_location);
+        void delete_blocked_moves();
+    };
 
-private:
-    const int value = 100;
-};
+    class King : public Piece
+    {
+    public:
+        King() : Piece() {};
+        King(const int in_player, const int in_location);
+        void delete_blocked_moves();
+    };
+
+    // Functors for location comparisons
+    struct b_Col_High
+    {
+        b_Col_High(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // mod 8 will tell us if it's in the same column
+            return (   (in_move > n_location) 
+                    && ((in_move - n_location) % 8 == 0) );
+        }
+    };
+
+    struct b_Col_Low
+    {
+        b_Col_Low(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // mod 8 will tell us if it's in the same column
+            return (   (in_move < n_location) 
+                    && ((in_move - n_location) % 8 == 0) );
+        }
+    };
+
+    struct b_Row_High
+    {
+        b_Row_High(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // if the quotient and the mod are equal it's in the same roe
+            return (   (in_move > n_location) 
+                    && ((in_move / 8 == n_location / 8)) );
+        }
+    };
+
+    struct b_Row_Low
+    {
+        b_Row_Low(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // if the quotient and the mod are equal it's in the same roe
+            return (   (in_move < n_location) 
+                    && (in_move / 8 == n_location / 8) );
+        }
+    };
+
+    struct b_Pos_Slope_High
+    {
+        b_Pos_Slope_High(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // mod 9 gives us positive slope, mod 8 eliminates wraparound
+            return (   ((in_move - n_location) % 9 == 0) 
+                    && (in_move > n_location) 
+                    && (in_move % 8 > n_location % 8) );
+        }
+    };
+
+    struct b_Pos_Slope_Low
+    {
+        b_Pos_Slope_Low(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // mod 9 gives us positive slope, mod 8 eliminates wraparound
+            return (   ((in_move - n_location) % 9 == 0) 
+                    && (in_move < n_location) 
+                    && (in_move % 8 < n_location % 8) );
+        }
+    };
+
+    struct b_Neg_Slope_High
+    {
+        b_Neg_Slope_High(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // mod 7 gives us negative slope, mod 8 eliminates wraparound
+            return (   ((in_move - n_location) % 7 == 0) 
+                    && (in_move > n_location) 
+                    && (in_move % 8 < n_location % 8) );
+        }
+    };
+
+    struct b_Neg_Slope_Low
+    {
+        b_Neg_Slope_Low(const int & in_location) : n_location(in_location) {}
+        int n_location;
+        bool operator()(const int & in_move) {
+            // mod 7 gives us negative slope, mod 8 eliminates wraparound
+            return (   ((in_move - n_location) % 7 == 0) 
+                    && (in_move < n_location) 
+                    && (in_move % 8 > n_location % 8) );
+        }
+    };
+
+    extern std::array<std::unique_ptr<Piece>, 64> p_arr_board;
+}
 
 #endif
