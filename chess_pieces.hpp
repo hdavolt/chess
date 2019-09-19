@@ -8,53 +8,51 @@
 
 namespace Chess
 {
+    typedef std::pair<int, int> pair_t;
+    typedef std::list<pair_t> list_t;
+    
+    inline
+    pair_t operator+(const pair_t & left, const pair_t & right) {   
+        return {left.first + right.first, left.second + right.second};                                    
+    }
+
     class Piece
     {
     public:
         Piece();
-        Piece(const int in_player, const int in_location) : 
+        Piece(const int in_player, const pair_t in_location) : 
             n_player(in_player), n_location(in_location) {};
 
         const int get_player() const   { return n_player; };
-        const int get_location() const { return n_location; };
+        const pair_t get_location() const { return n_location; };
 
         const int get_value() { return n_value; };
         const char get_type() { return c_type; };
 
-        bool add_move(const int in_location);
-        const std::list<int> & calc_avail_moves();
+        bool add_move(const pair_t & in_location);
+        const list_t & calc_avail_moves();
 
     protected:
         int n_player;
-        int n_location;
         int n_move_count = 0;
+
+        pair_t n_location;
 
         int  n_value = 0;
         char c_type = '$';
 
-        std::list<int>  nl_rel_moves;
-        std::list<int>  nl_act_moves;
-        std::list<int>  nl_move_history;
+        list_t  nl_rel_moves;
+        list_t  nl_act_moves;
+        list_t  nl_move_history;
         virtual void delete_blocked_moves() = 0;
-
-        /*
-        void DeleteColHigh       (const int inValue);
-        void DeleteColLow        (const int inValue);
-        void DeleteRowHigh       (const int inValue);
-        void DeleteRowLow        (const int inValue);
-        void DeleteDiagHighHigh  (const int inValue);
-        void DeleteDiagHighLow   (const int inValue);
-        void DeleteDiagLowLow    (const int inValue);
-        void DeleteDiagLowHigh   (const int inValue);
-        */
     };
 
     class Pawn : public Piece
     {
     public:
         Pawn() : Piece() {};
-        Pawn(const int in_player, const int in_location);
-        bool add_move(const int in_location);
+        Pawn(const int in_player, const pair_t in_location);
+        bool add_move(const pair_t & in_location);
         void delete_blocked_moves();
     };
 
@@ -62,7 +60,7 @@ namespace Chess
     {
     public:
         Rook() : Piece() {};
-        Rook(const int in_player, const int in_location);
+        Rook(const int in_player, const pair_t in_location);
         void delete_blocked_moves();
     };
 
@@ -70,7 +68,7 @@ namespace Chess
     {
     public:
         Knight() : Piece() {};
-        Knight(const int in_player, const int in_location);
+        Knight(const int in_player, const pair_t in_location);
         void delete_blocked_moves();
     };
 
@@ -78,7 +76,7 @@ namespace Chess
     {
     public:
         Bishop() : Piece() {};
-        Bishop(const int in_player, const int in_location);
+        Bishop(const int in_player, const pair_t in_location);
         void delete_blocked_moves();
     };
 
@@ -86,7 +84,7 @@ namespace Chess
     {
     public:
         Queen() : Piece() {};
-        Queen(const int in_player, const int in_location);
+        Queen(const int in_player, const pair_t in_location);
         void delete_blocked_moves();
     };
 
@@ -94,104 +92,104 @@ namespace Chess
     {
     public:
         King() : Piece() {};
-        King(const int in_player, const int in_location);
+        King(const int in_player, const pair_t in_location);
         void delete_blocked_moves();
     };
 
     // Functors for location comparisons
     struct b_Col_High
     {
-        b_Col_High(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // mod 8 will tell us if it's in the same column
-            return (   (in_move > n_location) 
-                    && ((in_move - n_location) % 8 == 0) );
+        b_Col_High(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            return (   in_move.first  >  n_location.first 
+                    && in_move.second == n_location.second );
         }
     };
 
     struct b_Col_Low
     {
-        b_Col_Low(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // mod 8 will tell us if it's in the same column
-            return (   (in_move < n_location) 
-                    && ((in_move - n_location) % 8 == 0) );
+        b_Col_Low(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            return (   in_move.first  <  n_location.first 
+                    && in_move.second == n_location.second );
         }
     };
 
     struct b_Row_High
     {
-        b_Row_High(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // if the quotient and the mod are equal it's in the same roe
-            return (   (in_move > n_location) 
-                    && ((in_move / 8 == n_location / 8)) );
+        b_Row_High(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            return (   in_move.first  == n_location.first 
+                    && in_move.second >  n_location.second );
         }
     };
 
     struct b_Row_Low
     {
-        b_Row_Low(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // if the quotient and the mod are equal it's in the same roe
-            return (   (in_move < n_location) 
-                    && (in_move / 8 == n_location / 8) );
+        b_Row_Low(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            return (   in_move.first  == n_location.first 
+                    && in_move.second <  n_location.second );
         }
     };
 
     struct b_Pos_Slope_High
     {
-        b_Pos_Slope_High(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // mod 9 gives us positive slope, mod 8 eliminates wraparound
-            return (   ((in_move - n_location) % 9 == 0) 
-                    && (in_move > n_location) 
-                    && (in_move % 8 > n_location % 8) );
+        b_Pos_Slope_High(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            pair_t offset( in_move.first  - n_location.first, 
+                           in_move.second - n_location.second );
+            return (   offset.first  == offset.second
+                    && offset.first  > 0 
+                    && offset.second > 0 );
         }
     };
 
     struct b_Pos_Slope_Low
     {
-        b_Pos_Slope_Low(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // mod 9 gives us positive slope, mod 8 eliminates wraparound
-            return (   ((in_move - n_location) % 9 == 0) 
-                    && (in_move < n_location) 
-                    && (in_move % 8 < n_location % 8) );
+        b_Pos_Slope_Low(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            pair_t offset( in_move.first  - n_location.first, 
+                           in_move.second - n_location.second );
+            return (   offset.first  == offset.second
+                    && offset.first  < 0 
+                    && offset.second < 0 );
         }
     };
 
     struct b_Neg_Slope_High
     {
-        b_Neg_Slope_High(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // mod 7 gives us negative slope, mod 8 eliminates wraparound
-            return (   ((in_move - n_location) % 7 == 0) 
-                    && (in_move > n_location) 
-                    && (in_move % 8 < n_location % 8) );
+        b_Neg_Slope_High(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            pair_t offset( in_move.first  - n_location.first, 
+                           in_move.second - n_location.second );
+            return (   offset.first  == std::abs(offset.second)
+                    && offset.first  > 0 
+                    && offset.second < 0 );
         }
     };
 
     struct b_Neg_Slope_Low
     {
-        b_Neg_Slope_Low(const int & in_location) : n_location(in_location) {}
-        int n_location;
-        bool operator()(const int & in_move) {
-            // mod 7 gives us negative slope, mod 8 eliminates wraparound
-            return (   ((in_move - n_location) % 7 == 0) 
-                    && (in_move < n_location) 
-                    && (in_move % 8 > n_location % 8) );
+        b_Neg_Slope_Low(const pair_t & in_location) : n_location(in_location) {}
+        pair_t n_location;
+        bool operator()(const pair_t & in_move) {
+            pair_t offset( in_move.first  - n_location.first, 
+                           in_move.second - n_location.second );
+            return (   std::abs(offset.first)  == offset.second
+                    && offset.first  < 0 
+                    && offset.second > 0 );
         }
     };
 
-    extern std::array<std::unique_ptr<Piece>, 64> p_arr_board;
+    extern std::array<std::array<std::unique_ptr<Piece>, 8>, 8> p_arr_board;
 }
 
 #endif
