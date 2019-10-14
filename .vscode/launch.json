@@ -8,10 +8,10 @@
         "name": "(gdb) Bash on Windows Launch",
         "type": "cppdbg",
         "request": "launch",
-        "program": "/mnt/c/Users/hdavo/OneDrive/Documents/GitHub/chess/chess",
+        "program": "/mnt/c/Users/hdavo/Documents/GitHub/chess/chess",
         "args": [],
         "stopAtEntry": false,
-        "cwd": "/mnt/c/Users/hdavo/OneDrive/Documents/GitHub/chess",
+        "cwd": "/mnt/c/Users/hdavo/Documents/GitHub/chess",
         "environment": [],
         "externalConsole": false,
         "pipeTransport": {

@@ -28,7 +28,7 @@ namespace Chess
         const int        get_value() const       { return n_value; };
         const char       get_type() const        { return c_type; };
         const int        get_move_count() const  { return n_move_count; };
-        const list_t &  get_move_list() const   { return nl_act_moves; };
+        const list_t &   get_move_list() const   { return nl_act_moves; };
 
         bool            move_to(const coord_t & in_location);
 
