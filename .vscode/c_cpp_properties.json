@@ -19,7 +19,9 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/include/linux/**",
+                "/usr/include/c++/**"
             ],
             "defines": [
                 "_DEBUG",

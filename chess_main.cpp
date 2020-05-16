@@ -7,10 +7,9 @@
 
 namespace Chess
 {
-    std::array<std::array<std::unique_ptr<Piece>, 8>, 8> p_arr_board;
+    board_t p_arr_board;
     void init_new_game();
     bool move_piece(const coord_t & in_from, const coord_t & in_to);
-    //Functors for use in comparisons with other pieces
 }
 
 int main()

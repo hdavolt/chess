@@ -3,10 +3,107 @@
 
 using namespace Chess;
 
+// Using (row, column) matrix format
+const int get_row(const coord_t& c) { return c.first; };
+const int get_col(const coord_t& c) { return c.second; };
+
+// Reference a chess board by location coordinate
+const std::unique_ptr<Piece> & get_piece(const coord_t& c)
+{
+    return p_arr_board[get_row(c)][get_col(c)];
+}
+
+// Functors for location comparisons
+struct b_Col_High
+{
+    b_Col_High(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        return (   get_row(in_move)  >  get_row(n_location) 
+                && get_col(in_move)  == get_col(n_location) );
+    }
+};
+struct b_Col_Low
+{
+    b_Col_Low(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        return (   get_row(in_move)  <  get_row(n_location) 
+                && get_col(in_move)  == get_col(n_location) );
+    }
+};
+struct b_Row_High
+{
+    b_Row_High(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        return (   get_row(in_move)  == get_row(n_location) 
+                && get_col(in_move)  >  get_col(n_location) );
+    }
+};
+struct b_Row_Low
+{
+    b_Row_Low(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        return (   get_row(in_move)  == get_row(n_location) 
+                && get_col(in_move)  <  get_col(n_location) );
+    }
+};
+struct b_Pos_Slope_High
+{
+    b_Pos_Slope_High(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        coord_t offset( get_row(in_move) - get_row(n_location), 
+                        get_col(in_move) - get_col(n_location) );
+        return (   get_row(offset) == get_col(offset)
+                && get_row(offset) > 0 
+                && get_col(offset) > 0 );
+    }
+};
+struct b_Pos_Slope_Low
+{
+    b_Pos_Slope_Low(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        coord_t offset( get_row(in_move) - get_row(n_location), 
+                        get_col(in_move) - get_col(n_location) );
+        return (   get_row(offset) == get_col(offset)
+                && get_row(offset) < 0 
+                && get_col(offset) < 0 );
+    }
+};
+struct b_Neg_Slope_High
+{
+    b_Neg_Slope_High(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        coord_t offset( get_row(in_move) - get_row(n_location), 
+                        get_col(in_move) - get_col(n_location) );
+        return (   get_row(offset) == std::abs(get_col(offset))
+                && get_row(offset) > 0 
+                && get_col(offset) < 0 );
+    }
+};
+struct b_Neg_Slope_Low
+{
+    b_Neg_Slope_Low(const coord_t & in_location) : n_location(in_location) {}
+    coord_t n_location;
+    bool operator()(const coord_t & in_move) {
+        coord_t offset( get_row(in_move) - get_row(n_location), 
+                        get_col(in_move) - get_col(n_location) );
+        return (   std::abs(get_row(offset)) == get_col(offset)
+                && get_row(offset) < 0 
+                && get_col(offset) > 0 );
+    }
+};
+
 bool Piece::move_to(const coord_t & in_location)
 {
     bool b_retval = false;
     calc_relative_moves();
+    remove_blocked_moves();
     // Because a .contains() function would be too easy
     if (std::find(nl_act_moves.begin(), nl_act_moves.end(), in_location) != nl_act_moves.end()) {
         nl_move_history.push_front(n_location);
@@ -14,6 +111,7 @@ bool Piece::move_to(const coord_t & in_location)
         n_move_count++;
         b_retval = true;
         calc_relative_moves();
+        remove_blocked_moves();
     }
     return b_retval;
 }
@@ -24,12 +122,11 @@ void Piece::calc_relative_moves()
     nl_act_moves.clear();
     for (coord_t n_rel : nl_rel_moves) {
         coord_t n_move = n_location + n_rel;
-        if (   n_move.first  >= 0 && n_move.first  < 8
-            && n_move.second >= 0 && n_move.second < 8 ) {
+        if (   get_row(n_move) >= 0 && get_row(n_move) < 8
+            && get_col(n_move) >= 0 && get_col(n_move) < 8 ) {
             nl_act_moves.push_front(n_move);
         }
     }
-    remove_blocked_moves();
 }
 
 Pawn::Pawn(const int in_player, const coord_t in_location) : Piece(in_player, in_location)
@@ -49,16 +146,16 @@ void Pawn::remove_blocked_moves()
 {
     list_t nl_move_list = nl_act_moves;
     for (coord_t n_move : nl_move_list) {
-        if (p_arr_board[n_move.first][n_move.second]) {
-            if (   n_location.second == n_move.second 
-                || p_arr_board[n_move.first][n_move.second]->get_player() == n_player) {
+        if (get_piece(n_move)) {
+            if (   n_location.second == get_col(n_move) 
+                || get_piece(n_move)->get_player() == n_player) {
                 nl_act_moves.remove(n_move);
             }
         }
-        else if (n_location.second != n_move.second) {
+        else if (n_location.second != get_col(n_move)) {
             nl_act_moves.remove(n_move);
         }
-        if (n_move_count == 1 && std::abs(n_move.first) == 2) {
+        if (n_move_count == 1 && std::abs(get_row(n_move)) == 2) {
             nl_act_moves.remove(n_move);
         }
     }
@@ -81,18 +178,13 @@ void Rook::remove_blocked_moves()
 {
     list_t nl_move_list = nl_act_moves;
     for (coord_t n_move : nl_move_list) {
-        if (p_arr_board[n_move.first][n_move.second]) {
-            b_Col_High test_col_high(n_location);
-            b_Row_High test_row_high(n_location);
-            b_Col_Low   test_col_low(n_location);
-            b_Row_Low   test_row_low(n_location);
+        if (get_piece(n_move)) {
+                 if (b_Col_High(n_location)(n_move)) nl_act_moves.remove_if(b_Col_High(n_move));
+            else if (b_Row_High(n_location)(n_move)) nl_act_moves.remove_if(b_Row_High(n_move));
+            else if (b_Col_Low (n_location)(n_move)) nl_act_moves.remove_if(b_Col_Low (n_move));
+            else if (b_Row_Low (n_location)(n_move)) nl_act_moves.remove_if(b_Row_Low (n_move));
 
-                 if (test_col_high(n_move)) { nl_act_moves.remove_if(b_Col_High(n_move)); }
-            else if (test_row_high(n_move)) { nl_act_moves.remove_if(b_Row_High(n_move)); }
-            else if ( test_col_low(n_move)) { nl_act_moves.remove_if( b_Col_Low(n_move)); }
-            else if ( test_row_low(n_move)) { nl_act_moves.remove_if( b_Row_Low(n_move)); }
-
-            if (p_arr_board[n_move.first][n_move.second]->get_player() == n_player) { nl_act_moves.remove(n_move); }
+            if (get_piece(n_move)->get_player() == n_player) { nl_act_moves.remove(n_move); }
         }
     }
 }
@@ -110,8 +202,8 @@ void Knight::remove_blocked_moves()
 {
     list_t nl_move_list = nl_act_moves;
     for (coord_t n_move : nl_move_list) {
-        if (p_arr_board[n_move.first][n_move.second]) {
-            if (p_arr_board[n_move.first][n_move.second]->get_player() == n_player) {
+        if (get_piece(n_move)) {
+            if (get_piece(n_move)->get_player() == n_player) {
                 nl_act_moves.remove(n_move);
             }
         }
@@ -135,18 +227,13 @@ void Bishop::remove_blocked_moves()
 {
     list_t nl_move_list = nl_act_moves;
     for (coord_t n_move : nl_move_list) {
-        if (p_arr_board[n_move.first][n_move.second]) {
-            b_Pos_Slope_High test_pos_slope_high(n_location);
-            b_Pos_Slope_Low   test_pos_slope_low(n_location);
-            b_Neg_Slope_High test_neg_slope_high(n_location);
-            b_Neg_Slope_Low   test_neg_slope_low(n_location);
+        if (get_piece(n_move)) {
+                 if (b_Pos_Slope_High(n_location)(n_move)) nl_act_moves.remove_if(b_Pos_Slope_High(n_move));
+            else if (b_Pos_Slope_Low (n_location)(n_move)) nl_act_moves.remove_if(b_Pos_Slope_Low (n_move));
+            else if (b_Neg_Slope_High(n_location)(n_move)) nl_act_moves.remove_if(b_Neg_Slope_High(n_move));
+            else if (b_Neg_Slope_Low (n_location)(n_move)) nl_act_moves.remove_if(b_Neg_Slope_Low (n_move));
 
-                 if (test_pos_slope_high(n_move)) { nl_act_moves.remove_if(b_Pos_Slope_High(n_move)); }
-            else if ( test_pos_slope_low(n_move)) { nl_act_moves.remove_if( b_Pos_Slope_Low(n_move)); }
-            else if (test_neg_slope_high(n_move)) { nl_act_moves.remove_if(b_Neg_Slope_High(n_move)); }
-            else if ( test_neg_slope_low(n_move)) { nl_act_moves.remove_if( b_Neg_Slope_Low(n_move)); }
-
-            if (p_arr_board[n_move.first][n_move.second]->get_player() == n_player) { nl_act_moves.remove(n_move); }
+            if (get_piece(n_move)->get_player() == n_player) { nl_act_moves.remove(n_move); }
         }
     }
 }
@@ -171,28 +258,18 @@ Queen::Queen(const int in_player, const coord_t in_location) : Piece(in_player, 
 void Queen::remove_blocked_moves()
 {
     list_t nl_move_list = nl_act_moves;
-    for (auto n_move : nl_move_list) {
-        if (p_arr_board[n_move.first][n_move.second]) {
-            b_Col_High             test_col_high(n_location);
-            b_Row_High             test_row_high(n_location);
-            b_Col_Low               test_col_low(n_location);
-            b_Row_Low               test_row_low(n_location);
-            b_Pos_Slope_High test_pos_slope_high(n_location);
-            b_Pos_Slope_Low   test_pos_slope_low(n_location);
-            b_Neg_Slope_High test_neg_slope_high(n_location);
-            b_Neg_Slope_Low   test_neg_slope_low(n_location);
-            
-                 if (      test_col_high(n_move)) { nl_act_moves.remove_if(      b_Col_High(n_move)); }
-            else if (      test_row_high(n_move)) { nl_act_moves.remove_if(      b_Row_High(n_move)); }
-            else if (       test_col_low(n_move)) { nl_act_moves.remove_if(       b_Col_Low(n_move)); }
-            else if (       test_row_low(n_move)) { nl_act_moves.remove_if(       b_Row_Low(n_move)); }
-            else if (test_pos_slope_high(n_move)) { nl_act_moves.remove_if(b_Pos_Slope_High(n_move)); }
-            else if ( test_pos_slope_low(n_move)) { nl_act_moves.remove_if( b_Pos_Slope_Low(n_move)); }
-            else if (test_neg_slope_high(n_move)) { nl_act_moves.remove_if(b_Neg_Slope_High(n_move)); }
-            else if ( test_neg_slope_low(n_move)) { nl_act_moves.remove_if( b_Neg_Slope_Low(n_move)); }
+    for (coord_t n_move : nl_move_list) {
+        if (get_piece(n_move)) {
+                 if (b_Col_High      (n_location)(n_move)) nl_act_moves.remove_if(b_Col_High      (n_move));
+            else if (b_Row_High      (n_location)(n_move)) nl_act_moves.remove_if(b_Row_High      (n_move));
+            else if (b_Col_Low       (n_location)(n_move)) nl_act_moves.remove_if(b_Col_Low       (n_move));
+            else if (b_Row_Low       (n_location)(n_move)) nl_act_moves.remove_if(b_Row_Low       (n_move));
+            else if (b_Pos_Slope_High(n_location)(n_move)) nl_act_moves.remove_if(b_Pos_Slope_High(n_move));
+            else if (b_Pos_Slope_Low (n_location)(n_move)) nl_act_moves.remove_if(b_Pos_Slope_Low (n_move));
+            else if (b_Neg_Slope_High(n_location)(n_move)) nl_act_moves.remove_if(b_Neg_Slope_High(n_move));
+            else if (b_Neg_Slope_Low (n_location)(n_move)) nl_act_moves.remove_if(b_Neg_Slope_Low (n_move));
 
-            if (p_arr_board[n_move.first][n_move.second]->get_player() == n_player) { nl_act_moves.remove(n_move); }
-
+            if (get_piece(n_move)->get_player() == n_player) { nl_act_moves.remove(n_move); }
         }
     }
 }
@@ -208,9 +285,9 @@ King::King(const int in_player, const coord_t in_location) : Piece(in_player, in
 void King::remove_blocked_moves()
 {
     list_t nl_move_list = nl_act_moves;
-    for (auto n_move : nl_move_list) {
-        if (p_arr_board[n_move.first][n_move.second]) {
-            if (p_arr_board[n_move.first][n_move.second]->get_player() == n_player) {
+    for (coord_t n_move : nl_move_list) {
+        if (get_piece(n_move)) {
+            if (get_piece(n_move)->get_player() == n_player) {
                 nl_act_moves.remove(n_move);
             }
         }

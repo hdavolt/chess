@@ -8,11 +8,13 @@
 
 namespace Chess
 {
+    // Piece coordinates and lists of coordinates
     typedef std::pair<int, int> coord_t;
     typedef std::forward_list<coord_t> list_t;
     
+    // Adding coordintes
     inline
-    coord_t operator+(const coord_t & left, const coord_t & right) {   
+    const coord_t operator+(const coord_t & left, const coord_t & right) {   
         return {left.first + right.first, left.second + right.second};                                    
     }
 
@@ -43,7 +45,6 @@ namespace Chess
         list_t          nl_act_moves;
         list_t          nl_move_history;
 
-        // calc_relative_moves calls remove_blocked_moves which is defined for each piece
         void            calc_relative_moves();
         virtual void    remove_blocked_moves() = 0;
     };
@@ -96,100 +97,9 @@ namespace Chess
         void remove_blocked_moves();
     };
 
-    // Functors for location comparisons
-    struct b_Col_High
-    {
-        b_Col_High(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            return (   in_move.first  >  n_location.first 
-                    && in_move.second == n_location.second );
-        }
-    };
-
-    struct b_Col_Low
-    {
-        b_Col_Low(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            return (   in_move.first  <  n_location.first 
-                    && in_move.second == n_location.second );
-        }
-    };
-
-    struct b_Row_High
-    {
-        b_Row_High(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            return (   in_move.first  == n_location.first 
-                    && in_move.second >  n_location.second );
-        }
-    };
-
-    struct b_Row_Low
-    {
-        b_Row_Low(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            return (   in_move.first  == n_location.first 
-                    && in_move.second <  n_location.second );
-        }
-    };
-
-    struct b_Pos_Slope_High
-    {
-        b_Pos_Slope_High(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            coord_t offset( in_move.first  - n_location.first, 
-                           in_move.second - n_location.second );
-            return (   offset.first  == offset.second
-                    && offset.first  > 0 
-                    && offset.second > 0 );
-        }
-    };
-
-    struct b_Pos_Slope_Low
-    {
-        b_Pos_Slope_Low(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            coord_t offset( in_move.first  - n_location.first, 
-                           in_move.second - n_location.second );
-            return (   offset.first  == offset.second
-                    && offset.first  < 0 
-                    && offset.second < 0 );
-        }
-    };
-
-    struct b_Neg_Slope_High
-    {
-        b_Neg_Slope_High(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            coord_t offset( in_move.first  - n_location.first, 
-                           in_move.second - n_location.second );
-            return (   offset.first  == std::abs(offset.second)
-                    && offset.first  > 0 
-                    && offset.second < 0 );
-        }
-    };
-
-    struct b_Neg_Slope_Low
-    {
-        b_Neg_Slope_Low(const coord_t & in_location) : n_location(in_location) {}
-        coord_t n_location;
-        bool operator()(const coord_t & in_move) {
-            coord_t offset( in_move.first  - n_location.first, 
-                           in_move.second - n_location.second );
-            return (   std::abs(offset.first)  == offset.second
-                    && offset.first  < 0 
-                    && offset.second > 0 );
-        }
-    };
-
-    extern std::array<std::array<std::unique_ptr<Piece>, 8>, 8> p_arr_board;
+    // Expect a chess board
+    typedef std::array<std::array<std::unique_ptr<Piece>, 8>, 8> board_t;
+    extern board_t p_arr_board;
 }
 
 #endif
