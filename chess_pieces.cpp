@@ -3,10 +3,6 @@
 
 using namespace Chess;
 
-// Using (row, column) matrix format
-const int get_row(const coord_t& c) { return c.first; };
-const int get_col(const coord_t& c) { return c.second; };
-
 // Reference a chess board by location coordinate
 const std::unique_ptr<Piece> & get_piece(const coord_t& c)
 {
@@ -19,8 +15,8 @@ struct b_Col_High
     b_Col_High(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        return (   get_row(in_move)  >  get_row(n_location) 
-                && get_col(in_move)  == get_col(n_location) );
+        return (   get_col(in_move)  == get_col(n_location)
+                && get_row(in_move)  >  get_row(n_location) );
     }
 };
 struct b_Col_Low
@@ -28,8 +24,8 @@ struct b_Col_Low
     b_Col_Low(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        return (   get_row(in_move)  <  get_row(n_location) 
-                && get_col(in_move)  == get_col(n_location) );
+        return (   get_col(in_move)  == get_col(n_location) 
+                && get_row(in_move)  <  get_row(n_location) );
     }
 };
 struct b_Row_High
@@ -37,8 +33,8 @@ struct b_Row_High
     b_Row_High(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        return (   get_row(in_move)  == get_row(n_location) 
-                && get_col(in_move)  >  get_col(n_location) );
+        return (   get_col(in_move)  >  get_col(n_location)
+                && get_row(in_move)  == get_row(n_location) );
     }
 };
 struct b_Row_Low
@@ -46,8 +42,8 @@ struct b_Row_Low
     b_Row_Low(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        return (   get_row(in_move)  == get_row(n_location) 
-                && get_col(in_move)  <  get_col(n_location) );
+        return (   get_col(in_move)  <  get_col(n_location)
+                && get_row(in_move)  == get_row(n_location) );
     }
 };
 struct b_Pos_Slope_High
@@ -55,11 +51,11 @@ struct b_Pos_Slope_High
     b_Pos_Slope_High(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        coord_t offset( get_row(in_move) - get_row(n_location), 
-                        get_col(in_move) - get_col(n_location) );
-        return (   get_row(offset) == get_col(offset)
-                && get_row(offset) > 0 
-                && get_col(offset) > 0 );
+        coord_t offset( get_col(in_move) - get_col(n_location), 
+                        get_row(in_move) - get_row(n_location) );
+        return (   get_col(offset) == get_row(offset)
+                && get_col(offset) > 0 
+                && get_row(offset) > 0 );
     }
 };
 struct b_Pos_Slope_Low
@@ -67,11 +63,11 @@ struct b_Pos_Slope_Low
     b_Pos_Slope_Low(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        coord_t offset( get_row(in_move) - get_row(n_location), 
-                        get_col(in_move) - get_col(n_location) );
-        return (   get_row(offset) == get_col(offset)
-                && get_row(offset) < 0 
-                && get_col(offset) < 0 );
+        coord_t offset( get_col(in_move) - get_col(n_location), 
+                        get_row(in_move) - get_row(n_location) );
+        return (   get_col(offset) == get_row(offset)
+                && get_col(offset) < 0 
+                && get_row(offset) < 0 );
     }
 };
 struct b_Neg_Slope_High
@@ -79,11 +75,11 @@ struct b_Neg_Slope_High
     b_Neg_Slope_High(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        coord_t offset( get_row(in_move) - get_row(n_location), 
-                        get_col(in_move) - get_col(n_location) );
-        return (   get_row(offset) == std::abs(get_col(offset))
-                && get_row(offset) > 0 
-                && get_col(offset) < 0 );
+        coord_t offset( get_col(in_move) - get_col(n_location), 
+                        get_row(in_move) - get_row(n_location) );
+        return (   std::abs(get_col(offset) == get_row(offset))
+                && get_col(offset) < 0 
+                && get_row(offset) > 0 );
     }
 };
 struct b_Neg_Slope_Low
@@ -91,11 +87,11 @@ struct b_Neg_Slope_Low
     b_Neg_Slope_Low(const coord_t & in_location) : n_location(in_location) {}
     coord_t n_location;
     bool operator()(const coord_t & in_move) {
-        coord_t offset( get_row(in_move) - get_row(n_location), 
-                        get_col(in_move) - get_col(n_location) );
-        return (   std::abs(get_row(offset)) == get_col(offset)
-                && get_row(offset) < 0 
-                && get_col(offset) > 0 );
+        coord_t offset( get_col(in_move) - get_col(n_location), 
+                        get_row(in_move) - get_row(n_location) );
+        return (   get_col(offset) == std::abs(get_row(offset))
+                && get_col(offset) > 0 
+                && get_row(offset) < 0 );
     }
 };
 
@@ -122,8 +118,8 @@ void Piece::calc_relative_moves()
     nl_act_moves.clear();
     for (coord_t n_rel : nl_rel_moves) {
         coord_t n_move = n_location + n_rel;
-        if (   get_row(n_move) >= 0 && get_row(n_move) < 8
-            && get_col(n_move) >= 0 && get_col(n_move) < 8 ) {
+        if (   get_col(n_move) >= 0 && get_col(n_move) < 8
+            && get_row(n_move) >= 0 && get_row(n_move) < 8 ) {
             nl_act_moves.push_front(n_move);
         }
     }
@@ -135,10 +131,10 @@ Pawn::Pawn(const int in_player, const coord_t in_location) : Piece(in_player, in
     c_type = 'p';
 
     if (n_player == 1) {
-        nl_rel_moves = { { 1, -1}, { 1,  0}, { 1,  1}, { 2,  0} };
+        nl_rel_moves = { {-1,  1}, { 0,  1}, { 1,  1}, { 0,  2} };
     }
     else if (n_player == 2) {
-        nl_rel_moves = { {-1, -1}, {-1,  0}, {-1,  1}, {-2,  0} };
+        nl_rel_moves = { {-1, -1}, { 0, -1}, { 1, -1}, { 0, -2} };
     }
 }
 
@@ -152,7 +148,7 @@ void Pawn::remove_blocked_moves()
                 nl_act_moves.remove(n_move);
             }
         }
-        else if (n_location.second != get_col(n_move)) {
+        else if (get_col(n_location) != get_col(n_move)) {
             nl_act_moves.remove(n_move);
         }
         if (n_move_count == 1 && std::abs(get_row(n_move)) == 2) {

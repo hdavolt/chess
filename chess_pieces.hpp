@@ -18,6 +18,10 @@ namespace Chess
         return {left.first + right.first, left.second + right.second};                                    
     }
 
+    // First member is col (file/x), second is row (rank/y)
+    #define get_col std::get<0>
+    #define get_row std::get<1>
+
     class Piece
     {
     public:
@@ -25,12 +29,12 @@ namespace Chess
         Piece(const int in_player, const coord_t in_location) : 
             n_player(in_player), n_location(in_location) {};
 
-        const int        get_player() const      { return n_player; };
-        const coord_t &  get_location() const    { return n_location; };
-        const int        get_value() const       { return n_value; };
-        const char       get_type() const        { return c_type; };
-        const int        get_move_count() const  { return n_move_count; };
-        const list_t &   get_move_list() const   { return nl_act_moves; };
+        int             get_player() const          { return n_player; };
+        const coord_t & get_location() const        { return n_location; };
+        int             get_value() const           { return n_value; };
+        char            get_type() const            { return c_type; };
+        int             get_move_count() const      { return n_move_count; };
+        const list_t &  get_move_list() const       { return nl_act_moves; };
 
         bool            move_to(const coord_t & in_location);
 

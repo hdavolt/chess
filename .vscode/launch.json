@@ -4,30 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    {
-        "name": "(gdb) Bash on Windows Launch",
-        "type": "cppdbg",
-        "request": "launch",
-        "program": "/mnt/c/Users/hdavo/Documents/GitHub/chess/chess",
-        "args": [],
-        "stopAtEntry": false,
-        "cwd": "/mnt/c/Users/hdavo/Documents/GitHub/chess",
-        "environment": [],
-        "externalConsole": false,
-        "pipeTransport": {
-            "debuggerPath": "/usr/bin/gdb",
-            "pipeProgram": "${env:windir}\\system32\\bash.exe",
-            "pipeArgs": ["-c"],
-            "pipeCwd": ""
-        },
-        "setupCommands": [
-            {
-                "description": "Enable pretty-printing for gdb",
-                "text": "-enable-pretty-printing",
-                "ignoreFailures": true
-            }
-        ]
-    },
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
