@@ -9,7 +9,7 @@
 namespace Chess
 {
     // Piece coordinates and lists of coordinates
-    typedef std::pair<int, int> coord_t;
+    typedef std::pair<unsigned short int, unsigned short int> coord_t;
     typedef std::forward_list<coord_t> list_t;
     
     // Adding coordintes
